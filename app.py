@@ -58,10 +58,11 @@ with col1:
         try:
             y_true = df_result["Churn"].map({"No": 0, "Yes": 1})
             y_pred = df_result["Churn Prediction"]
-            cm = confusion_matrix(y_true, y_pred)
+            cm = confusion_matrix(y_true, y_pred, normalize='all')
+            cm_percent = cm * 100
             fig_cm, ax_cm = plt.subplots()
             disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["No Churn", "Churn"])
-            disp.plot(ax=ax_cm)
+            disp.plot(ax=ax_cm, values_format=".1f")
             st.pyplot(fig_cm)
             plt.clf()
         except Exception as e:
