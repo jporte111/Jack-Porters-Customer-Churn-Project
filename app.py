@@ -54,15 +54,18 @@ if uploaded_file:
 
 with col1:
     st.markdown("**Confusion Matrix: Churn Prediction**")
-    if "Churn" in df_result.columns and "Churn Prediction" in df_result.columns:
-        cm = confusion_matrix(df_result["Churn"], df_result["Churn Prediction"])
-        fig_cm, ax_cm = plt.subplots()
-        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["No Churn", "Churn"])
-        disp.plot(ax=ax_cm)
-        st.pyplot(fig_cm)
-        plt.clf()
+    if "Churn" in df_result.columns and df_result["Churn"].nunique() == 2:
+        try:
+            cm = confusion_matrix(df_result["Churn"], df_result["Churn Prediction"])
+            fig_cm, ax_cm = plt.subplots()
+            disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["No Churn", "Churn"])
+            disp.plot(ax=ax_cm)
+            st.pyplot(fig_cm)
+            plt.clf()
+        except Exception as e:
+            st.error(f"Could not plot confusion matrix: {e}")
     else:
-        st.info("Churn labels not found. Showing basic prediction count.")
+        st.info("True churn labels not available. Showing basic prediction count.")
         sns.countplot(x="Churn Prediction", data=df_result)
         st.pyplot(plt.gcf())
         plt.clf()
