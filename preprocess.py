@@ -41,6 +41,22 @@ def preprocess_tenure(df):
 
     return df
 
+def preprocess_churn(df):
+    expected_columns = CHURN_FEATURES.copy()
+
+    # Add missing columns with NaNs (for safety)
+    for col in expected_columns:
+        if col not in df.columns:
+            df[col] = np.nan
+
+    # Subset to expected columns
+    df = df[expected_columns]
+
+    # Fix types
+    df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
+
+    return df
+
 
 # Preprocessing for tenure
 # Assumes the model already includes preprocessing steps

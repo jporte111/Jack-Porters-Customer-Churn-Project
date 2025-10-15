@@ -8,9 +8,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
-from .preprocess import preprocess_churn, preprocess_tenure
-
-
+from preprocess import preprocess_churn, preprocess_tenure
 
 st.set_page_config(layout="wide")
 st.title("📊 Customer Churn & Tenure Prediction Dashboard")
