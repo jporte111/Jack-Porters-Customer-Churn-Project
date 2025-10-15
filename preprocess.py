@@ -18,28 +18,27 @@ TENURE_FEATURES = [
 ]
 
 # Preprocessing for churn
-def preprocess_churn(df):
-    # Define the exact columns used during model training
+import numpy as np
+
+def preprocess_tenure(df):
     expected_columns = [
-        "gender", "SeniorCitizen", "Partner", "Dependents",
-        "tenure", "PhoneService", "MultipleLines", "InternetService",
-        "OnlineSecurity", "OnlineBackup", "DeviceProtection", "TechSupport",
-        "StreamingTV", "StreamingMovies", "Contract", "PaperlessBilling",
-        "PaymentMethod", "MonthlyCharges", "TotalCharges"
+        "gender", "SeniorCitizen", "Partner", "Dependents", "PhoneService", "MultipleLines",
+        "InternetService", "OnlineSecurity", "OnlineBackup", "DeviceProtection", "TechSupport",
+        "StreamingTV", "StreamingMovies", "Contract", "PaperlessBilling", "PaymentMethod",
+        "MonthlyCharges", "TotalCharges"
     ]
 
-    # Add any missing columns with default values
+    # Add missing columns with NaNs (will be handled by model's pipeline)
     for col in expected_columns:
         if col not in df.columns:
             df[col] = np.nan
 
-    # Subset to only expected columns
+    # Subset to expected columns only
     df = df[expected_columns]
 
-    # Ensure TotalCharges is numeric
+    # Fix types
     df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
 
-    # Return clean data
     return df
 
 
