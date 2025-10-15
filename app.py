@@ -61,7 +61,7 @@ with col1:
             cm = confusion_matrix(y_true, y_pred, normalize='all')
             cm_percent = cm * 100
             fig_cm, ax_cm = plt.subplots()
-            disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["No Churn", "Churn"])
+            disp = ConfusionMatrixDisplay(confusion_matrix=cm_percent, display_labels=["No Churn", "Churn"])
             disp.plot(ax=ax_cm)
             st.pyplot(fig_cm)
             plt.clf()
