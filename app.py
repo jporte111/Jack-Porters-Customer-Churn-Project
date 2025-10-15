@@ -62,7 +62,7 @@ with col1:
             cm_percent = cm * 100
             fig_cm, ax_cm = plt.subplots()
             disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["No Churn", "Churn"])
-            disp.plot(ax=ax_cm)
+            disp.plot(ax=ax_cm, values_format="100f")
             st.pyplot(fig_cm)
             plt.clf()
         except Exception as e:
