@@ -4,7 +4,12 @@ import joblib
 import xgboost as xgb
 import seaborn as sns
 import matplotlib.pyplot as plt
-from utils.preprocess import preprocess_churn, preprocess_tenure
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+
+from preprocess import preprocess_churn, preprocess_tenure
+
 
 st.set_page_config(layout="wide")
 st.title("📊 Customer Churn & Tenure Prediction Dashboard")
