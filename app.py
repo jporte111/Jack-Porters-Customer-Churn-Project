@@ -58,7 +58,7 @@ with col1:
         try:
             y_true = df_result["Churn"].map({"No": 0, "Yes": 1})
             y_pred = df_result["Churn Prediction"]
-            cm = confusion_matrix(df_result["Churn"], df_result["Churn Prediction"])
+            cm = confusion_matrix(y_true, y_pred)
             fig_cm, ax_cm = plt.subplots()
             disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["No Churn", "Churn"])
             disp.plot(ax=ax_cm)
