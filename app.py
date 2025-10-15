@@ -50,17 +50,40 @@ if uploaded_file:
     # --- Visualizations ---
     st.subheader("📊 Visual Insights")
     col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("**Churn Distribution**")
+    from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+
+with col1:
+    st.markdown("**Confusion Matrix: Churn Prediction**")
+    if "Churn" in df_result.columns and "Churn Prediction" in df_result.columns:
+        cm = confusion_matrix(df_result["Churn"], df_result["Churn Prediction"])
+        fig_cm, ax_cm = plt.subplots()
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["No Churn", "Churn"])
+        disp.plot(ax=ax_cm)
+        st.pyplot(fig_cm)
+        plt.clf()
+    else:
+        st.info("Churn labels not found. Showing basic prediction count.")
         sns.countplot(x="Churn Prediction", data=df_result)
         st.pyplot(plt.gcf())
         plt.clf()
 
-    with col2:
-        st.markdown("**Predicted Tenure Distribution**")
+with col2:
+    st.markdown("**True vs. Predicted Tenure**")
+    if "tenure" in df_result.columns and "Predicted Tenure (Months)" in df_result.columns:
+        fig3, ax3 = plt.subplots()
+        ax3.scatter(df_result["tenure"], df_result["Predicted Tenure (Months)"], alpha=0.4)
+        ax3.plot([0, 80], [0, 80], 'r--')
+        ax3.set_xlabel("True Tenure (Months)")
+        ax3.set_ylabel("Predicted Tenure (Months)")
+        ax3.set_title("True vs. Predicted Tenure")
+        st.pyplot(fig3)
+        plt.clf()
+    else:
+        st.info("True tenure not available. Showing distribution.")
         sns.histplot(df_result["Predicted Tenure (Months)"], kde=True)
         st.pyplot(plt.gcf())
         plt.clf()
+
 
     # --- Download ---
     csv = df_result.to_csv(index=False).encode("utf-8")
