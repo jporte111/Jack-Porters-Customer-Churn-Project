@@ -21,12 +21,7 @@ TENURE_FEATURES = [
 import numpy as np
 
 def preprocess_tenure(df):
-    expected_columns = [
-        "gender", "SeniorCitizen", "Partner", "Dependents", "PhoneService", "MultipleLines",
-        "InternetService", "OnlineSecurity", "OnlineBackup", "DeviceProtection", "TechSupport",
-        "StreamingTV", "StreamingMovies", "Contract", "PaperlessBilling", "PaymentMethod",
-        "MonthlyCharges", "TotalCharges"
-    ]
+    expected_columns = TENURE_FEATURES.copy()
 
     # Add missing columns with NaNs (will be handled by model's pipeline)
     for col in expected_columns:
