@@ -56,11 +56,3 @@ def preprocess_churn(df):
     df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
 
     return df
-
-
-# Preprocessing for tenure
-# Assumes the model already includes preprocessing steps
-# Here, we just return the required columns
-
-def preprocess_tenure(df):
-    return df[TENURE_FEATURES].copy()
