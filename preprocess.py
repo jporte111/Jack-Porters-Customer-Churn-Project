@@ -19,27 +19,29 @@ TENURE_FEATURES = [
 
 # Preprocessing for churn
 def preprocess_churn(df):
-    X = df[CHURN_FEATURES].copy()
+    # Define the exact columns used during model training
+    expected_columns = [
+        "gender", "SeniorCitizen", "Partner", "Dependents",
+        "tenure", "PhoneService", "MultipleLines", "InternetService",
+        "OnlineSecurity", "OnlineBackup", "DeviceProtection", "TechSupport",
+        "StreamingTV", "StreamingMovies", "Contract", "PaperlessBilling",
+        "PaymentMethod", "MonthlyCharges", "TotalCharges"
+    ]
 
-    num_cols = X.select_dtypes(include="number").columns.tolist()
-    cat_cols = X.select_dtypes(exclude="number").columns.tolist()
+    # Add any missing columns with default values
+    for col in expected_columns:
+        if col not in df.columns:
+            df[col] = np.nan
 
-    numeric_pipe = Pipeline([
-        ("imputer", SimpleImputer(strategy="median")),
-        ("scaler", StandardScaler())
-    ])
+    # Subset to only expected columns
+    df = df[expected_columns]
 
-    categorical_pipe = Pipeline([
-        ("imputer", SimpleImputer(strategy="most_frequent")),
-        ("encoder", OneHotEncoder(handle_unknown="ignore"))
-    ])
+    # Ensure TotalCharges is numeric
+    df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
 
-    preprocess = ColumnTransformer([
-        ("num", numeric_pipe, num_cols),
-        ("cat", categorical_pipe, cat_cols)
-    ])
+    # Return clean data
+    return df
 
-    return preprocess.fit_transform(X)
 
 # Preprocessing for tenure
 # Assumes the model already includes preprocessing steps
