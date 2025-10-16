@@ -73,13 +73,13 @@ if uploaded_file:
         default=df_result["Churn Prediction"].unique()
     )
 
-# Apply filters
-df_result = df_result[
-    (df_result["gender"].isin(gender_filter)) &
-    (df_result["InternetService"].isin(internet_filter)) &
-    (df_result["PaymentMethod"].isin(payment_filter)) &
-    (df_result["Churn Prediction"].isin(churn_filter))
-]
+    # Apply filters
+    df_result = df_result[
+        (df_result["gender"].isin(gender_filter)) &
+        (df_result["InternetService"].isin(internet_filter)) &
+        (df_result["PaymentMethod"].isin(payment_filter)) &
+        (df_result["Churn Prediction"].isin(churn_filter))
+    ]
 
 
     # --- Visual Insights ---
