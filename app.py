@@ -72,9 +72,23 @@ if uploaded_file:
         total_customers = len(df_result)
         total_churned = (df_result["Churn Prediction"] == "Yes").sum()
         churn_rate = (total_churned / total_customers) * 100
+
+        # Safe remapping
         df_result["Churn Prediction"] = pd.Series(churn_preds).map({0: "No", 1: "Yes"})
-        top_contract = df_result[df_result["Churn Prediction"] == "Yes"]["Contract"].mode()[0]
-        top_payment = df_result[df_result["Churn Prediction"] == "Yes"]["PaymentMethod"].mode()[0]
+
+        # Filter for churned customers
+        churned_df = df_result[df_result["Churn Prediction"] == "Yes"]
+
+        # Safe mode extraction
+        top_contract = churned_df["Contract"].mode()[0] if not churned_df["Contract"].empty else "N/A"
+        top_payment = churned_df["PaymentMethod"].mode()[0] if not churned_df["PaymentMethod"].empty else "N/A"
+
+        st.markdown(f"""
+        **Insight:**
+        Out of {total_customers:,} customers, **{total_churned:,}** were predicted to churn (**{churn_rate:.1f}%**).
+        Most of the churned customers were on a **{top_contract}** contract and used **{top_payment}** for payment.
+        """)
+
 
         st.markdown(f"""
         **Insight:**
