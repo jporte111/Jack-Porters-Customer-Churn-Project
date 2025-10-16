@@ -111,7 +111,7 @@ if uploaded_file:
             plt.clf()
 
     with col2:
-        st.markdown("**Total Tenure Prediction**")
+        st.markdown("**Tenure Prediction Accuracy**")
         if "tenure" in df_result.columns and "Predicted Tenure (Months)" in df_result.columns:
             fig3, ax3 = plt.subplots()
             ax3.scatter(df_result["tenure"], df_result["Predicted Tenure (Months)"], alpha=0.4, label="Predictions")
@@ -130,7 +130,32 @@ if uploaded_file:
             ax3.set_title("True vs. Predicted Tenure")
             ax3.legend()
             st.pyplot(fig3)
-            st.markdown("This scatter plot compares actual tenure vs. predicted. The dashed red line shows perfect predictions. The green trend line shows the overall fit.")
+            # --- Automated Tenure Insight ---
+            from sklearn.linear_model import LinearRegression
+            import numpy as np
+
+            # Fit a trend line
+            X = df_result["tenure"].values.reshape(-1, 1)
+            y = df_result["Predicted Tenure (Months)"].values
+            model = LinearRegression().fit(X, y)
+            r_squared = model.score(X, y)
+            slope = model.coef_[0]
+
+            # Create insight message
+            if r_squared > 0.8:
+                trend_comment = "The model does an excellent job predicting tenure based on the clear upward trend."
+            elif r_squared > 0.5:
+                trend_comment = "The model has a reasonable correlation with actual tenure, but there's room to improve prediction accuracy."
+            else:
+                trend_comment = "The trend line shows a weak correlation, indicating the model may struggle with accurate tenure prediction."
+
+            st.markdown(f"""
+            **Insight:**  
+            This chart shows the relationship between actual and predicted tenure.  
+            The **green line** represents the model's trend in predicting tenure.  
+            The **red dashed line** is an ideal 1:1 prediction. In this particular case, 
+            **R² Score**: `{r_squared:.2f}` — {trend_comment}
+            """)
             plt.clf()
         else:
             st.info("True tenure not available. Showing distribution.")
