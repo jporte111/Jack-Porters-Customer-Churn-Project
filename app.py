@@ -85,6 +85,22 @@ if uploaded_file:
                         ax_cm.text(j, i, value, ha="center", va="center", color="black", fontsize=12)
                 st.pyplot(fig_cm)
                 st.markdown("This confusion matrix shows prediction performance. Each percentage represents the share of total predictions. Values on the diagonal indicate correct predictions.")
+                churn_counts = df_result["Churn"].value_counts(normalize=True) * 100
+                churn_no = churn_counts.get("No", 0)
+                churn_yes = churn_counts.get("Yes", 0)
+
+                if churn_yes > 40:
+                    churn_insight = "A relatively high churn rate indicates potential issues with customer satisfaction or service retention."
+                elif churn_yes < 20:
+                    churn_insight = "The churn rate is quite low, suggesting strong customer retention."
+                else:
+                    churn_insight = "The churn rate is moderate, showing room for improvement in retention strategies."
+
+                st.markdown(f"""
+                **Insight:**  
+                Approximately **{churn_no:.1f}%** of customers stayed, while **{churn_yes:.1f}%** churned.  
+                {churn_insight}
+                """)
                 plt.clf()
             except Exception as e:
                 st.error(f"Could not plot confusion matrix: {e}")
