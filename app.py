@@ -36,7 +36,7 @@ if uploaded_file:
 
     df_result = df.copy()
     df_result["Churn Probability"] = (churn_probs * 100).round(2).astype(str) + "%"
-    df_result["Churn Prediction"] = churn_preds.map({0: "No", 1: "Yes"})
+    df_result["Churn Prediction"] = pd.Series(churn_preds).map({0: "No", 1: "Yes"})
     df_result["Predicted Tenure (Months)"] = np.ceil(tenure_preds).astype(int)
 
     st.subheader("📈 Prediction Results")
