@@ -49,6 +49,38 @@ if uploaded_file:
     contract_filter = st.sidebar.multiselect("Filter by Contract", options=df_result["Contract"].unique())
     if contract_filter:
         df_result = df_result[df_result["Contract"].isin(contract_filter)]
+    
+    st.sidebar.header("🔍 Filters")
+
+    gender_filter = st.sidebar.multiselect(
+        "Filter by Gender", 
+        options=df_result["gender"].unique(), 
+        default=df_result["gender"].unique()
+    )
+    internet_filter = st.sidebar.multiselect(
+        "Filter by Internet Service",
+        options=df_result["InternetService"].unique(),
+        default=df_result["InternetService"].unique()
+    )
+    payment_filter = st.sidebar.multiselect(
+        "Filter by Payment Method",
+        options=df_result["PaymentMethod"].unique(),
+        default=df_result["PaymentMethod"].unique()
+    )
+    churn_filter = st.sidebar.multiselect(
+        "Filter by Churn Prediction",
+        options=df_result["Churn Prediction"].unique(),
+        default=df_result["Churn Prediction"].unique()
+    )
+
+# Apply filters
+df_result = df_result[
+    (df_result["gender"].isin(gender_filter)) &
+    (df_result["InternetService"].isin(internet_filter)) &
+    (df_result["PaymentMethod"].isin(payment_filter)) &
+    (df_result["Churn Prediction"].isin(churn_filter))
+]
+
 
     # --- Visual Insights ---
     st.subheader("📊 Visual Insights")
