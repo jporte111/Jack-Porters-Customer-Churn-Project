@@ -54,6 +54,16 @@ if uploaded_file:
     from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 with col1:
+
+    st.markdown("**Total Churn Distribution**")
+    fig_churn_dist, ax_churn_dist = plt.subplots()
+    sns.countplot(x="Churn", data=df_result, ax=ax_churn_dist)
+    ax_churn_dist.set_title("Total Churn Distribution")
+    ax_churn_dist.set_ylabel("Number of Customers")
+    st.pyplot(fig_churn_dist)
+    plt.clf()
+
+
     st.markdown("**Churn Prediction Accuracy**")
     if "Churn" in df_result.columns and df_result["Churn"].nunique() == 2:
         try:
