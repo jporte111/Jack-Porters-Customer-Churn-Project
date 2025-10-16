@@ -81,7 +81,6 @@ if uploaded_file:
         (df_result["Churn Prediction"].isin(churn_filter))
     ]
 
-
     # --- Visual Insights ---
     st.subheader("📊 Visual Insights")
     col1, col2 = st.columns(2)
@@ -112,8 +111,15 @@ if uploaded_file:
         churned_df = df_result[df_result["Churn Prediction"] == "Yes"]
 
         # Safe mode extraction
-        top_contract = churned_df["Contract"].mode()[0] if not churned_df["Contract"].empty else "N/A"
-        top_payment = churned_df["PaymentMethod"].mode()[0] if not churned_df["PaymentMethod"].empty else "N/A"
+        if not churned_df.empty and "Contract" in churned_df.columns and not churned_df["Contract"].dropna().empty:
+            top_contract = churned_df["Contract"].mode()[0]
+        else:
+            top_contract = "N/A"
+
+        if not churned_df.empty and "PaymentMethod" in churned_df.columns and not churned_df["PaymentMethod"].dropna().empty:
+            top_payment = churned_df["PaymentMethod"].mode()[0]
+        else:
+            top_payment = "N/A"
 
         st.markdown(f"""
         **Insight:**
