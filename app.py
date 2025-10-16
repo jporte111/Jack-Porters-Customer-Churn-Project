@@ -58,6 +58,8 @@ with col1:
     st.markdown("**Total Churn Distribution**")
     fig_churn_dist, ax_churn_dist = plt.subplots()
     sns.countplot(x="Churn", data=df_result, ax=ax_churn_dist)
+    for container in ax_churn_dist.containers:
+        ax_churn_dist.bar_label(container, fmt='%.0f', label_type='edge', padding=3)
     ax_churn_dist.set_title("Total Churn Distribution")
     ax_churn_dist.set_ylabel("Number of Customers")
     st.pyplot(fig_churn_dist)
