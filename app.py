@@ -62,7 +62,7 @@ with col1:
             cm_percent = cm * 100
             fig_cm, ax_cm = plt.subplots()
             disp = ConfusionMatrixDisplay(confusion_matrix=cm_percent, display_labels=["No Churn", "Churn"])
-            disp.plot(ax=ax_cm, cmap="magma", include_values=False)
+            disp.plot(ax=ax_cm, cmap="Oranges", include_values=False)
             for i in range(cm_percent.shape[0]):
                 for j in range(cm_percent.shape[1]):
                     value = f"{cm_percent[i, j]:.1f}%"
