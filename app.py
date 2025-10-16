@@ -53,7 +53,7 @@ if uploaded_file:
     from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 with col1:
-    st.markdown("**Confusion Matrix: Churn Prediction**")
+    st.markdown("**Confusion Matrix: Churn Prediction Accuracy**")
     if "Churn" in df_result.columns and df_result["Churn"].nunique() == 2:
         try:
             y_true = df_result["Churn"].map({"No": 0, "Yes": 1})
@@ -62,7 +62,7 @@ with col1:
             cm_percent = cm * 100
             fig_cm, ax_cm = plt.subplots()
             disp = ConfusionMatrixDisplay(confusion_matrix=cm_percent, display_labels=["No Churn", "Churn"])
-            disp.plot(ax=ax_cm)
+            disp.plot(ax=ax_cm, values_format=".1f%%")
             st.pyplot(fig_cm)
             plt.clf()
         except Exception as e:
