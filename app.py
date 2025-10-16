@@ -49,37 +49,6 @@ if uploaded_file:
     contract_filter = st.sidebar.multiselect("Filter by Contract", options=df_result["Contract"].unique())
     if contract_filter:
         df_result = df_result[df_result["Contract"].isin(contract_filter)]
-    
-    st.sidebar.header("🔍 Filters")
-
-    gender_filter = st.sidebar.multiselect(
-        "Filter by Gender", 
-        options=df_result["gender"].unique(), 
-        default=df_result["gender"].unique()
-    )
-    internet_filter = st.sidebar.multiselect(
-        "Filter by Internet Service",
-        options=df_result["InternetService"].unique(),
-        default=df_result["InternetService"].unique()
-    )
-    payment_filter = st.sidebar.multiselect(
-        "Filter by Payment Method",
-        options=df_result["PaymentMethod"].unique(),
-        default=df_result["PaymentMethod"].unique()
-    )
-    churn_filter = st.sidebar.multiselect(
-        "Filter by Churn Prediction",
-        options=df_result["Churn Prediction"].unique(),
-        default=df_result["Churn Prediction"].unique()
-    )
-
-    # Apply filters
-    df_result = df_result[
-        (df_result["gender"].isin(gender_filter)) &
-        (df_result["InternetService"].isin(internet_filter)) &
-        (df_result["PaymentMethod"].isin(payment_filter)) &
-        (df_result["Churn Prediction"].isin(churn_filter))
-    ]
 
     # --- Visual Insights ---
     st.subheader("📊 Visual Insights")
@@ -111,15 +80,8 @@ if uploaded_file:
         churned_df = df_result[df_result["Churn Prediction"] == "Yes"]
 
         # Safe mode extraction
-        if not churned_df.empty and "Contract" in churned_df.columns and not churned_df["Contract"].dropna().empty:
-            top_contract = churned_df["Contract"].mode()[0]
-        else:
-            top_contract = "N/A"
-
-        if not churned_df.empty and "PaymentMethod" in churned_df.columns and not churned_df["PaymentMethod"].dropna().empty:
-            top_payment = churned_df["PaymentMethod"].mode()[0]
-        else:
-            top_payment = "N/A"
+        top_contract = churned_df["Contract"].mode()[0] if not churned_df["Contract"].empty else "N/A"
+        top_payment = churned_df["PaymentMethod"].mode()[0] if not churned_df["PaymentMethod"].empty else "N/A"
 
         st.markdown(f"""
         **Insight:**
