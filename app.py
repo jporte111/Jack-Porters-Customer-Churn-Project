@@ -92,7 +92,7 @@ with col1:
         plt.clf()
 
 with col2:
-    st.markdown("**True vs. Predicted Tenure**")
+    st.markdown("**Total Tenure Prediction**")
     if "tenure" in df_result.columns and "Predicted Tenure (Months)" in df_result.columns:
         fig3, ax3 = plt.subplots()
         ax3.scatter(df_result["tenure"], df_result["Predicted Tenure (Months)"], alpha=0.4)
