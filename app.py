@@ -66,7 +66,7 @@ with col1:
             for i in range(cm_percent.shape[0]):
                 for j in range(cm_percent.shape[1]):
                     value = f"{cm_percent[i, j]:.1f}%"
-                    ax_cm.text(j, i, value, ha="center", va="center", color="white", fontsize=12)
+                    ax_cm.text(j, i, value, ha="center", va="center", color="black", fontsize=12)
 
             st.pyplot(fig_cm)
             plt.clf()
