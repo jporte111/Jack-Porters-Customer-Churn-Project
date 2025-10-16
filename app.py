@@ -72,6 +72,7 @@ if uploaded_file:
         total_customers = len(df_result)
         total_churned = (df_result["Churn Prediction"] == "Yes").sum()
         churn_rate = (total_churned / total_customers) * 100
+        df_result["Churn Prediction"] = pd.Series(churn_preds).map({0: "No", 1: "Yes"})
         top_contract = df_result[df_result["Churn Prediction"] == "Yes"]["Contract"].mode()[0]
         top_payment = df_result[df_result["Churn Prediction"] == "Yes"]["PaymentMethod"].mode()[0]
 
