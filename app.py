@@ -57,7 +57,7 @@ with col1:
     st.markdown("**Churn Prediction Accuracy**")
     if "Churn" in df_result.columns and df_result["Churn"].nunique() == 2:
         try:
-            y_true = df_result["Churn"].map({"No": 0, "Yes": 1})
+            y_true = df_result["Churn"].map({"No": "No", "Yes": "Yes"})
             y_pred = df_result["Churn Prediction"]
             cm = confusion_matrix(y_true, y_pred, normalize='all')
             cm_percent = cm * 100
