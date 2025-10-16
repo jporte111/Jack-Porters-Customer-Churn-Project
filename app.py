@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import joblib
 import xgboost as xgb
 import seaborn as sns
@@ -34,9 +35,9 @@ if uploaded_file:
     tenure_preds = tenure_model.predict(tenure_X)
 
     df_result = df.copy()
-    df_result["Churn Probability"] = churn_probs
-    df_result["Churn Prediction"] = churn_preds
-    df_result["Predicted Tenure (Months)"] = tenure_preds
+    df_result["Churn Probability"] = (churn_probs * 100).round(2).astype(str) + "%"
+    df_result["Churn Prediction"] = churn_preds.map({0: "No", 1: "Yes"})
+    df_result["Predicted Tenure (Months)"] = np.ceil(tenure_preds).astype(int)
 
     st.subheader("📈 Prediction Results")
     st.dataframe(df_result)
