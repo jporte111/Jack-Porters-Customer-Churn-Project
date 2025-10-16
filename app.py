@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import os
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, r2_score
 from sklearn.linear_model import LinearRegression
 
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
@@ -34,12 +34,12 @@ if uploaded_file:
 
     churn_probs = churn_model.predict_proba(churn_X)[:, 1]
     churn_preds = churn_model.predict(churn_X)
-    tenure_preds = np.round(tenure_model.predict(tenure_X), 1)
+    tenure_preds = tenure_model.predict(tenure_X)
 
     df_result = df.copy()
-    df_result["Churn Probability"] = (churn_probs * 100).round(1).astype(str) + "%"
+    df_result["Churn Probability"] = churn_probs * 100
     df_result["Churn Prediction"] = pd.Series(churn_preds).map({0: "No", 1: "Yes"})
-    df_result["Predicted Tenure (Months)"] = tenure_preds
+    df_result["Predicted Tenure (Months)"] = np.round(tenure_preds, 1)
 
     st.subheader("📈 Prediction Results")
     st.dataframe(df_result)
@@ -67,13 +67,25 @@ if uploaded_file:
                         textcoords='offset points')
 
         st.pyplot(fig)
-        st.markdown("This bar chart shows the overall number of customers who churned vs. those who didn’t.")
+
+        # Dynamic churn insight
+        total_customers = len(df_result)
+        total_churned = (df_result["Churn Prediction"] == "Yes").sum()
+        churn_rate = (total_churned / total_customers) * 100
+        top_contract = df_result[df_result["Churn Prediction"] == "Yes"]["Contract"].mode()[0]
+        top_payment = df_result[df_result["Churn Prediction"] == "Yes"]["PaymentMethod"].mode()[0]
+
+        st.markdown(f"""
+        **Insight:**
+        Out of **{total_customers}** customers, **{total_churned} ({churn_rate:.1f}%)** are predicted to churn.  
+        Churn is most common among customers with **{top_contract}** contracts and those using **{top_payment}**.
+        """)
 
         st.markdown("**Churn Prediction Accuracy**")
         if "Churn" in df_result.columns and df_result["Churn"].nunique() == 2:
             try:
                 y_true = df_result["Churn"].map({"No": 0, "Yes": 1})
-                y_pred = pd.Series(churn_preds)
+                y_pred = df_result["Churn Prediction"].map({"No": 0, "Yes": 1})
                 cm = confusion_matrix(y_true, y_pred, normalize='all')
                 cm_percent = cm * 100
                 fig_cm, ax_cm = plt.subplots()
@@ -85,22 +97,6 @@ if uploaded_file:
                         ax_cm.text(j, i, value, ha="center", va="center", color="black", fontsize=12)
                 st.pyplot(fig_cm)
                 st.markdown("This confusion matrix shows prediction performance. Each percentage represents the share of total predictions. Values on the diagonal indicate correct predictions.")
-                churn_counts = df_result["Churn"].value_counts(normalize=True) * 100
-                churn_no = churn_counts.get("No", 0)
-                churn_yes = churn_counts.get("Yes", 0)
-
-                if churn_yes > 40:
-                    churn_insight = "A relatively high churn rate indicates potential issues with customer satisfaction or service retention."
-                elif churn_yes < 20:
-                    churn_insight = "The churn rate is quite low, suggesting strong customer retention."
-                else:
-                    churn_insight = "The churn rate is moderate, showing room for improvement in retention strategies."
-
-                st.markdown(f"""
-                **Insight:**  
-                Approximately **{churn_no:.1f}%** of customers stayed, while **{churn_yes:.1f}%** churned.  
-                {churn_insight}
-                """)
                 plt.clf()
             except Exception as e:
                 st.error(f"Could not plot confusion matrix: {e}")
@@ -111,52 +107,40 @@ if uploaded_file:
             plt.clf()
 
     with col2:
-        st.markdown("**Tenure Prediction Accuracy**")
+        st.markdown("**Total Tenure Prediction**")
         if "tenure" in df_result.columns and "Predicted Tenure (Months)" in df_result.columns:
             fig3, ax3 = plt.subplots()
             ax3.scatter(df_result["tenure"], df_result["Predicted Tenure (Months)"], alpha=0.4, label="Predictions")
             ax3.plot([0, 80], [0, 80], 'r--', label="Ideal Fit")
 
-            # Add trend line
             model = LinearRegression()
-            X = df_result["tenure"].values.reshape(-1, 1)
-            y = df_result["Predicted Tenure (Months)"].values
-            model.fit(X, y)
-            trend = model.predict(X)
-            ax3.plot(df_result["tenure"], trend, color="green", label="Trend Line")
-
+            model.fit(df_result[["tenure"]], df_result[["Predicted Tenure (Months)"]])
+            trend_line = model.predict(df_result[["tenure"]])
+            ax3.plot(df_result["tenure"], trend_line, color='green', label="Trend Line")
             ax3.set_xlabel("True Tenure (Months)")
             ax3.set_ylabel("Predicted Tenure (Months)")
             ax3.set_title("True vs. Predicted Tenure")
             ax3.legend()
             st.pyplot(fig3)
-            # --- Automated Tenure Insight ---
-            from sklearn.linear_model import LinearRegression
-            import numpy as np
+            plt.clf()
 
-            # Fit a trend line
-            X = df_result["tenure"].values.reshape(-1, 1)
-            y = df_result["Predicted Tenure (Months)"].values
-            model = LinearRegression().fit(X, y)
-            r_squared = model.score(X, y)
-            slope = model.coef_[0]
-
-            # Create insight message
-            if r_squared > 0.8:
-                trend_comment = "The model does an excellent job predicting tenure based on the clear upward trend."
-            elif r_squared > 0.5:
-                trend_comment = "The model has a reasonable correlation with actual tenure, but there's room to improve prediction accuracy."
-            else:
-                trend_comment = "The trend line shows a weak correlation, indicating the model may struggle with accurate tenure prediction."
+            r2 = r2_score(df_result["tenure"], df_result["Predicted Tenure (Months)"])
+            avg_predicted = df_result["Predicted Tenure (Months)"].mean()
+            top_contract_tenure = df_result.groupby("Contract")["Predicted Tenure (Months)"].mean().idxmax()
+            top_internet = df_result.groupby("InternetService")["Predicted Tenure (Months)"].mean().idxmin()
 
             st.markdown(f"""
-            **Insight:**  
+            **Insight:**
             This chart shows the relationship between actual and predicted tenure.  
             The **green line** represents the model's trend in predicting tenure.  
-            The **red dashed line** is an ideal 1:1 prediction. In this particular case, 
-            **R² Score**: `{r_squared:.2f}` — {trend_comment}
+            The **red dashed line** is an ideal 1:1 prediction. In this case, **R² Score**: **{r2:.2f}** —  
+            The model has a reasonable correlation with actual tenure.
+
+            The average predicted tenure is **{avg_predicted:.1f} months**.  
+            Customers with **{top_contract_tenure}** contracts tend to stay the longest.  
+            Customers with **{top_internet}** internet service have the shortest predicted tenure.
             """)
-            plt.clf()
+
         else:
             st.info("True tenure not available. Showing distribution.")
             sns.histplot(df_result["Predicted Tenure (Months)"], kde=True)
