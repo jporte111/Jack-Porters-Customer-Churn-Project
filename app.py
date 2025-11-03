@@ -3,7 +3,7 @@ import pandas as pd
 import joblib
 import seaborn as sns
 import matplotlib.pyplot as plt
-from utils.preprocess import preprocess_churn, preprocess_tenure
+from preprocess import preprocess_churn, preprocess_tenure
 from sklearn.metrics import r2_score
 import numpy as np
 
