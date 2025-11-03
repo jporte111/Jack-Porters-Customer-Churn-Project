@@ -11,8 +11,8 @@ st.set_page_config(layout="wide")
 st.title("📊 Customer Churn & Tenure Prediction Dashboard")
 
 # Load models
-churn_model = joblib.load("models/churn_logreg_pipeline.pkl")
-tenure_model = joblib.load("models/tenure_pipeline.pkl")
+churn_model = joblib.load("Results/churn_logreg_pipeline.pkl")
+tenure_model = joblib.load("Results/tenure_pipeline.pkl")
 
 # File uploader
 uploaded_file = st.file_uploader("Upload your customer data CSV", type=["csv"])
