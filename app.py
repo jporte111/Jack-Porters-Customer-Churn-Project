@@ -1,4 +1,5 @@
 import streamlit as st
+import sklearn
 import pandas as pd
 import joblib
 import seaborn as sns
@@ -6,6 +7,13 @@ import matplotlib.pyplot as plt
 from preprocess import preprocess_churn, preprocess_tenure
 from sklearn.metrics import r2_score
 import numpy as np
+import site
+import sys
+sys.path.append(site.getusersitepackages())
+
+import sklearn
+import streamlit as st
+st.write("✅ Scikit-learn version (patched):", sklearn.__version__)
 
 st.set_page_config(layout="wide")
 st.title("📊 Customer Churn & Tenure Prediction Dashboard")
