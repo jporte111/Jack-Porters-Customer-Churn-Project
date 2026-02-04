@@ -52,23 +52,6 @@ if uploaded_file:
             selected = st.sidebar.multiselect(f"Filter by {col}", options=df_result[col].unique(), default=df_result[col].unique())
             df_result = df_result[df_result[col].isin(selected)]
 
-    # --- Dynamic Churn Insight ---
-    st.subheader("🔎 Churn Insights")
-    total_customers = len(df_result)
-    total_churned = (df_result["Churn Prediction"] == "Yes").sum()
-    churn_rate = (total_churned / total_customers) * 100 if total_customers else 0
-
-    top_contract = df_result[df_result["Churn Prediction"] == "Yes"]["Contract"].mode()[0] if "Contract" in df_result and not df_result[df_result["Churn Prediction"] == "Yes"].empty else "N/A"
-    top_payment = df_result[df_result["Churn Prediction"] == "Yes"]["PaymentMethod"].mode()[0] if "PaymentMethod" in df_result and not df_result[df_result["Churn Prediction"] == "Yes"].empty else "N/A"
-
-    st.markdown(f"""
-    **Insight:**
-    - Total customers: **{total_customers}**
-    - Predicted to churn: **{total_churned}** (**{churn_rate:.1f}%**)
-    - Most churners are on **{top_contract}** contracts.
-    - Most common payment method among churners: **{top_payment}**
-    """)
-
     # --- Visualizations ---
     st.subheader("📊 Visual Insights")
     col1, col2 = st.columns(2)
@@ -86,26 +69,33 @@ if uploaded_file:
                             textcoords='offset points')
             st.pyplot(fig)
 
-            # --- Confusion Matrix ---
-            if "ChurnFlag" in df_result.columns:
-                y_true = df_result["ChurnFlag"].map({0: "No", 1: "Yes"})
-                y_pred = df_result["Churn Prediction"]
-                cm = confusion_matrix(y_true, y_pred, labels=["No", "Yes"])
-                cm_percent = cm / cm.sum() * 100
+            st.markdown("**Confusion Matrix - Churn Prediction (%)**")
+            cm = confusion_matrix(df_result["Churn"].map({"No": 0, "Yes": 1}), churn_preds)
+            cm_percent = cm / cm.sum() * 100
+            fig, ax = plt.subplots()
+            sns.heatmap(cm_percent, annot=True, fmt=".1f", cmap="Blues", xticklabels=["No Churn", "Churn"], yticklabels=["No Churn", "Churn"], ax=ax)
+            ax.set_xlabel("Predicted")
+            ax.set_ylabel("Actual")
+            st.pyplot(fig)
 
-                fig_cm, ax_cm = plt.subplots()
-                sns.heatmap(cm_percent, annot=True, fmt=".1f", cmap="Blues",
-                            xticklabels=["No Churn", "Churn"], yticklabels=["No Churn", "Churn"], ax=ax_cm)
-                ax_cm.set_title("Confusion Matrix - Churn Prediction (%)")
-                ax_cm.set_xlabel("Predicted")
-                ax_cm.set_ylabel("Actual")
-                st.pyplot(fig_cm)
+            total_customers = len(df_result)
+            total_churned = (df_result["Churn Prediction"] == "Yes").sum()
+            churn_rate = (total_churned / total_customers) * 100 if total_customers else 0
+            top_contract = df_result[df_result["Churn Prediction"] == "Yes"]["Contract"].mode()[0] if "Contract" in df_result and not df_result[df_result["Churn Prediction"] == "Yes"].empty else "N/A"
+            top_payment = df_result[df_result["Churn Prediction"] == "Yes"]["PaymentMethod"].mode()[0] if "PaymentMethod" in df_result and not df_result[df_result["Churn Prediction"] == "Yes"].empty else "N/A"
 
-                st.markdown("""
-                - The confusion matrix shows the model's accuracy by category.
-                - A higher percentage in the bottom-right cell means strong identification of churners.
-                - Focus retention efforts on customers predicted to churn.
-                """)
+            st.markdown(f"""
+            **Insight:**
+            - Total customers: **{total_customers}**
+            - Predicted to churn: **{total_churned}** (**{churn_rate:.1f}%**)
+            - Most churners are on **{top_contract}** contracts.
+            - Most common payment method among churners: **{top_payment}**
+            
+            **Recommended Next Steps:**
+            - Offer loyalty incentives to customers on {top_contract} contracts.
+            - Consider improving user experience for those using {top_payment}.
+            - Targeted email campaigns for high-risk segments.
+            """)
 
     with col2:
         if "tenure" in df_result.columns and "Predicted Tenure (Months)" in df_result.columns:
@@ -125,23 +115,15 @@ if uploaded_file:
             r2 = r2_score(df_result["tenure"], df_result["Predicted Tenure (Months)"])
             st.markdown(f"""
             **Insight:**
-            This chart compares actual vs. predicted tenure.
             - The green line is the model's trend in predicting tenure.
             - The red dashed line is the ideal 1:1 prediction.
-            - R² Score: **{r2:.2f}** — Higher is better. Indicates the model's accuracy in predicting tenure.
+            - R² Score: **{r2:.2f}** — Higher is better.
+
+            **Recommended Next Steps:**
+            - Use predictions to flag customers likely to leave soon.
+            - Offer personalized retention deals based on low predicted tenure.
+            - Further analyze tenure dips by segment (e.g., payment type).
             """)
-
-    # --- Recommendations ---
-    st.subheader("📝 Recommended Next Steps")
-    st.markdown("""
-    ### For Churn:
-    - Target customers predicted to churn with personalized offers.
-    - Investigate dissatisfaction drivers like contract type and payment method.
-
-    ### For Tenure:
-    - Use predicted tenure to estimate customer lifetime value.
-    - Focus on improving services for short-tenure segments.
-    """)
 
     # --- Download ---
     csv = df_result.to_csv(index=False).encode("utf-8")
