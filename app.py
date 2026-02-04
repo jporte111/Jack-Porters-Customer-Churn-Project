@@ -5,14 +5,12 @@ import joblib
 import seaborn as sns
 import matplotlib.pyplot as plt
 from preprocess import preprocess_churn, preprocess_tenure
-from sklearn.metrics import r2_score
+from sklearn.metrics import r2_score, confusion_matrix
 import numpy as np
 import site
 import sys
 sys.path.append(site.getusersitepackages())
 
-import sklearn
-import streamlit as st
 st.write("✅ Scikit-learn version (patched):", sklearn.__version__)
 
 st.set_page_config(layout="wide")
@@ -88,6 +86,27 @@ if uploaded_file:
                             textcoords='offset points')
             st.pyplot(fig)
 
+            # --- Confusion Matrix ---
+            if "ChurnFlag" in df_result.columns:
+                y_true = df_result["ChurnFlag"].map({0: "No", 1: "Yes"})
+                y_pred = df_result["Churn Prediction"]
+                cm = confusion_matrix(y_true, y_pred, labels=["No", "Yes"])
+                cm_percent = cm / cm.sum() * 100
+
+                fig_cm, ax_cm = plt.subplots()
+                sns.heatmap(cm_percent, annot=True, fmt=".1f", cmap="Blues",
+                            xticklabels=["No Churn", "Churn"], yticklabels=["No Churn", "Churn"], ax=ax_cm)
+                ax_cm.set_title("Confusion Matrix - Churn Prediction (%)")
+                ax_cm.set_xlabel("Predicted")
+                ax_cm.set_ylabel("Actual")
+                st.pyplot(fig_cm)
+
+                st.markdown("""
+                - The confusion matrix shows the model's accuracy by category.
+                - A higher percentage in the bottom-right cell means strong identification of churners.
+                - Focus retention efforts on customers predicted to churn.
+                """)
+
     with col2:
         if "tenure" in df_result.columns and "Predicted Tenure (Months)" in df_result.columns:
             st.markdown("**Total Tenure Prediction**")
@@ -111,6 +130,18 @@ if uploaded_file:
             - The red dashed line is the ideal 1:1 prediction.
             - R² Score: **{r2:.2f}** — Higher is better. Indicates the model's accuracy in predicting tenure.
             """)
+
+    # --- Recommendations ---
+    st.subheader("📝 Recommended Next Steps")
+    st.markdown("""
+    ### For Churn:
+    - Target customers predicted to churn with personalized offers.
+    - Investigate dissatisfaction drivers like contract type and payment method.
+
+    ### For Tenure:
+    - Use predicted tenure to estimate customer lifetime value.
+    - Focus on improving services for short-tenure segments.
+    """)
 
     # --- Download ---
     csv = df_result.to_csv(index=False).encode("utf-8")
