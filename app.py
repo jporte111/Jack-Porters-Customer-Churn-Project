@@ -1,17 +1,11 @@
 import streamlit as st
-import sklearn
 import pandas as pd
-import joblib
+import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+import joblib
+from sklearn.metrics import confusion_matrix, r2_score
 from preprocess import preprocess_churn, preprocess_tenure
-from sklearn.metrics import r2_score, confusion_matrix
-import numpy as np
-import site
-import sys
-sys.path.append(site.getusersitepackages())
-
-st.write("✅ Scikit-learn version (patched):", sklearn.__version__)
 
 st.set_page_config(layout="wide")
 st.title("📊 Customer Churn & Tenure Prediction Dashboard")
@@ -28,10 +22,11 @@ if uploaded_file:
     st.subheader("📁 Preview of Uploaded Data")
     st.dataframe(df.head())
 
-    # Run predictions
+    # Preprocess data
     churn_X = preprocess_churn(df)
     tenure_X = preprocess_tenure(df)
 
+    # Make predictions
     churn_probs = churn_model.predict_proba(churn_X)[:, 1]
     churn_preds = churn_model.predict(churn_X)
     tenure_preds = tenure_model.predict(tenure_X)
@@ -44,7 +39,7 @@ if uploaded_file:
     st.subheader("📈 Prediction Results")
     st.dataframe(df_result)
 
-    # --- Filter Options ---
+    # --- Filters ---
     st.sidebar.header("🔍 Filter Options")
     filter_columns = ["Contract", "gender", "InternetService", "PaymentMethod", "Churn Prediction"]
     for col in filter_columns:
@@ -56,6 +51,7 @@ if uploaded_file:
     st.subheader("📊 Visual Insights")
     col1, col2 = st.columns(2)
 
+    # Churn Bar Chart + Insights
     with col1:
         st.markdown("### Total Churn Distribution")
         fig, ax = plt.subplots()
@@ -68,6 +64,28 @@ if uploaded_file:
                         textcoords='offset points')
         st.pyplot(fig)
 
+        # Churn Insights + Next Steps
+        total_customers = len(df_result)
+        total_churned = (df_result["Churn Prediction"] == "Yes").sum()
+        churn_rate = (total_churned / total_customers) * 100 if total_customers else 0
+
+        top_contract = df_result[df_result["Churn Prediction"] == "Yes"]["Contract"].mode()[0] if not df_result[df_result["Churn Prediction"] == "Yes"].empty else "N/A"
+        top_payment = df_result[df_result["Churn Prediction"] == "Yes"]["PaymentMethod"].mode()[0] if not df_result[df_result["Churn Prediction"] == "Yes"].empty else "N/A"
+
+        st.markdown("""
+        ### 🔍 Churn Insight:
+        - **Total customers:** {0}
+        - **Predicted to churn:** {1} ({2:.1f}%)
+        - **Most churners are on:** *{3}* contracts
+        - **Most common payment method among churners:** *{4}*
+
+        ### ✅ Next Steps:
+        - Offer loyalty incentives or discounts for customers on *{3}* contracts.
+        - Improve payment experience for *{4}* users.
+        - Implement proactive retention strategies for high churn probability segments.
+        """.format(total_customers, total_churned, churn_rate, top_contract, top_payment))
+
+    # Tenure Scatter Plot + Insights
     with col2:
         st.markdown("### Total Tenure Prediction")
         fig, ax = plt.subplots()
@@ -82,56 +100,34 @@ if uploaded_file:
         ax.legend()
         st.pyplot(fig)
 
-    st.markdown("### Confusion Matrix - Churn Prediction (%)")
-    cm = confusion_matrix(df["Churn"].map({"No": 0, "Yes": 1}), churn_preds)
-    cm_percent = cm / cm.sum() * 100
-
-    fig, ax = plt.subplots()
-    sns.heatmap(cm_percent, annot=True, fmt=".1f", cmap="Blues",
-                xticklabels=["No Churn", "Churn"],
-                yticklabels=["No Churn", "Churn"])
-    ax.set_xlabel("Predicted")
-    ax.set_ylabel("Actual")
-    st.pyplot(fig)
-
-    # Insights Columns
-    col3, col4 = st.columns(2)
-
-    with col3:
-        total_customers = len(df_result)
-        total_churned = (df_result["Churn Prediction"] == "Yes").sum()
-        churn_rate = (total_churned / total_customers) * 100 if total_customers else 0
-
-        top_contract = df_result[df_result["Churn Prediction"] == "Yes"]["Contract"].mode()[0] if not df_result[df_result["Churn Prediction"] == "Yes"].empty else "N/A"
-        top_payment = df_result[df_result["Churn Prediction"] == "Yes"]["PaymentMethod"].mode()[0] if not df_result[df_result["Churn Prediction"] == "Yes"].empty else "N/A"
-
-        st.markdown("### Churn Insight")
-        st.markdown(f"""
-        - **Total customers:** {total_customers}
-        - **Predicted to churn:** {total_churned} ({churn_rate:.1f}%)
-        - Most churners are on **{top_contract}** contracts.
-        - Most common payment method among churners: **{top_payment}**
-
-        **Next Steps:**
-        - Target at-risk customers with loyalty offers or incentives.
-        - Improve support and satisfaction for month-to-month users.
-        - Investigate issues with the '{top_payment}' method users.
-        """)
-
-    with col4:
         r2 = r2_score(df_result["tenure"], df_result["Predicted Tenure (Months)"])
-        st.markdown("### Tenure Insight")
-        st.markdown(f"""
+
+        st.markdown("""
+        ### 🧠 Tenure Insight:
         - The green line shows the model's trend in predicting tenure.
         - The red dashed line is the ideal 1:1 prediction.
-        - **R² Score:** {r2:.2f} — Higher is better. Indicates the model's accuracy.
+        - **R² Score:** {0:.2f} — Higher is better.
 
-        **Next Steps:**
-        - Focus on customers with lower predicted tenure for retention efforts.
-        - Use predicted tenure to forecast long-term revenue trends.
-        - Combine this with churn probability for better targeting.
-        """)
+        ### ✅ Next Steps:
+        - Review predicted short tenure customers for churn risk.
+        - Tailor retention campaigns by tenure group.
+        - Use predicted tenure for more personalized support or upsell timing.
+        """.format(r2))
 
-    # --- Download ---
+    # Confusion Matrix
+    if "ChurnFlag" in df_result.columns:
+        st.subheader("Confusion Matrix - Churn Prediction (%)")
+        cm = confusion_matrix(df_result["ChurnFlag"], churn_preds)
+        cm_percent = cm / cm.sum() * 100
+        fig, ax = plt.subplots()
+        sns.heatmap(cm_percent, annot=True, fmt=".1f", cmap="Blues",
+                    xticklabels=["No Churn", "Churn"],
+                    yticklabels=["No Churn", "Churn"])
+        ax.set_xlabel("Predicted")
+        ax.set_ylabel("Actual")
+        ax.set_title("Confusion Matrix - Churn Prediction (%)")
+        st.pyplot(fig)
+
+    # Download predictions
     csv = df_result.to_csv(index=False).encode("utf-8")
     st.download_button("📥 Download Predictions as CSV", csv, "churn_tenure_predictions.csv", "text/csv")
